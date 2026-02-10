@@ -12,13 +12,12 @@ from scipy.signal import butter, filtfilt
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-
-
 # -----------------------
-# Paths
+# Paths (HF/Docker safe)
 # -----------------------
-BASE_DIR = Path(__file__).resolve().parent.parent
-STORAGE_DIR = BASE_DIR / "storage"
+APP_DIR = Path(__file__).resolve().parent  # backend/
+
+STORAGE_DIR = APP_DIR / "storage"
 UPLOADS_DIR = STORAGE_DIR / "uploads"
 REFS_DIR = STORAGE_DIR / "references"
 DB_PATH = STORAGE_DIR / "app.db"
