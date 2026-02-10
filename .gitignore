@@ -8,3 +8,6 @@ backend/storage/app.db
 .DS_Store
 .vscode/
 .idea/
+storage/uploads/
+storage/references/
+*.wav
