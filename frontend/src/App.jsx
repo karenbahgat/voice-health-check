@@ -2,7 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 
-const API_URL = "http://localhost:8000/predict";
+const API_URL = "https://karen-bahgat-voice-health-backend.hf.space/predict";
+
+
 
 // Message if Healthy
 const HEALTHY_MESSAGE =
