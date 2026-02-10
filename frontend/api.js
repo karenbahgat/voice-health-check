@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_URL = "https://karen-bahgat-voice-health-backend.hf.space";
 
 export async function predictVoice({ name, age, phone, file }) {
   const fd = new FormData();
@@ -9,7 +9,7 @@ export async function predictVoice({ name, age, phone, file }) {
   fd.append("phone", phone);
   fd.append("file", file);
 
-  const res = await axios.post(`${API_BASE}/predict`, fd, {
+  const res = await axios.post(`${API_URL}/predict`, fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
