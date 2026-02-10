@@ -15,22 +15,22 @@ from fastapi.responses import FileResponse
 # -----------------------
 # Paths (HF/Docker safe)
 # -----------------------
-APP_DIR = Path(__file__).resolve().parent  # backend/
+APP_DIR = Path(__file__).resolve().parent  # root of the Space (where app.py is)
 
+# Storage (will be created inside the container)
 STORAGE_DIR = APP_DIR / "storage"
 UPLOADS_DIR = STORAGE_DIR / "uploads"
 REFS_DIR = STORAGE_DIR / "references"
 DB_PATH = STORAGE_DIR / "app.db"
 
+STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 REFS_DIR.mkdir(parents=True, exist_ok=True)
-STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 # -----------------------
-# Model artifacts (exported already)
+# Model artifacts (HF Space layout)
 # -----------------------
-BACKEND_DIR = BASE_DIR / "backend"
-ART_DIR = BACKEND_DIR / "model_artifacts"
+ART_DIR = APP_DIR / "model_artifacts"
 
 PIPELINE_PATH = ART_DIR / "pipeline.joblib"
 TOP_FEATURES_PATH = ART_DIR / "top_features.json"
@@ -46,8 +46,6 @@ if not CLASSES_PATH.exists():
 pipe = joblib.load(PIPELINE_PATH)
 top_features = json.load(open(TOP_FEATURES_PATH, "r", encoding="utf-8"))["top_features"]
 classes = json.load(open(CLASSES_PATH, "r", encoding="utf-8"))["classes"]
-
-
 # -----------------------
 # App
 # -----------------------
