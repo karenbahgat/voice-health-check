@@ -32,9 +32,10 @@ REFS_DIR.mkdir(parents=True, exist_ok=True)
 # -----------------------
 ART_DIR = APP_DIR / "model_artifacts"
 
-PIPELINE_PATH = ART_DIR / "pipeline.joblib"
-TOP_FEATURES_PATH = ART_DIR / "top_features.json"
+PIPELINE_PATH = ART_DIR / "pipeline_top30.joblib"
+TOP_FEATURES_PATH = ART_DIR / "top30_features.json"
 CLASSES_PATH = ART_DIR / "classes.json"
+
 
 if not PIPELINE_PATH.exists():
     raise RuntimeError(f"Missing model pipeline: {PIPELINE_PATH}")
@@ -45,7 +46,8 @@ if not CLASSES_PATH.exists():
 
 pipe = joblib.load(PIPELINE_PATH)
 top_features = json.load(open(TOP_FEATURES_PATH, "r", encoding="utf-8"))["top_features"]
-classes = json.load(open(CLASSES_PATH, "r", encoding="utf-8"))["classes"]
+classes = list(pipe.named_steps["clf"].classes_)
+
 
 # -----------------------
 # App
@@ -61,9 +63,7 @@ app = FastAPI(
 def root():
     return {"status": "ok", "service": "voice-health-backend"}
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -339,18 +339,25 @@ def extract_features_for_model(wav_path: str) -> np.ndarray:
 def predict_with_model(wav_path: str):
     X = extract_features_for_model(wav_path)
 
-    pred_idx = int(pipe.predict(X)[0])
-    pred_label = classes[pred_idx]
-
     if hasattr(pipe, "predict_proba"):
         p = pipe.predict_proba(X)[0]
         probs = {classes[i]: float(p[i]) for i in range(len(classes))}
-        confidence = float(probs[pred_label])
-    else:
-        probs = {pred_label: 1.0}
-        confidence = 1.0
+        pred_idx = int(np.argmax(p))
+        pred_label = classes[pred_idx]
+        confidence = float(p[pred_idx])
 
-    return pred_label, confidence, probs
+        # 🔹 لو الثقة قليلة متشخصيش مرض
+        THRESH = 0.60
+        if confidence < THRESH:
+            return "Uncertain", confidence, probs
+
+        return pred_label, confidence, probs
+
+    # fallback
+    pred_idx = int(pipe.predict(X)[0])
+    pred_label = classes[pred_idx]
+    return pred_label, 1.0, {pred_label: 1.0}
+
 
 
 # -----------------------

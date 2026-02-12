@@ -4,6 +4,7 @@ emoji: 📉
 colorFrom: blue
 colorTo: gray
 sdk: docker
+app_file: backend/app.py
 pinned: false
 ---
 
