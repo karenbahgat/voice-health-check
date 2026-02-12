@@ -56,6 +56,15 @@ app = FastAPI(
     description="Dataset used: https://www.kaggle.com/datasets/karenbahgatzakaria/als-and-parkinson-1",
 )
 
+
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "voice-health-backend"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # demo only
