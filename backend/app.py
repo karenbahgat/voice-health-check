@@ -46,6 +46,7 @@ if not CLASSES_PATH.exists():
 pipe = joblib.load(PIPELINE_PATH)
 top_features = json.load(open(TOP_FEATURES_PATH, "r", encoding="utf-8"))["top_features"]
 classes = json.load(open(CLASSES_PATH, "r", encoding="utf-8"))["classes"]
+
 # -----------------------
 # App
 # -----------------------
