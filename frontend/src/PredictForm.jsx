@@ -23,6 +23,11 @@ export default function PredictForm() {
     return Object.entries(result.probs).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
   }, [result]);
 
+  const showRehab = useMemo(() => {
+    const label = String(result?.predicted_label || "").toLowerCase();
+    return ["als", "parkinson"].includes(label);
+  }, [result]);
+
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
@@ -51,10 +56,7 @@ export default function PredictForm() {
       setResult(data);
       setPatientId(data.patient_id);
     } catch (err) {
-      const msg =
-        err?.response?.data?.detail ||
-        err?.message ||
-        "Request failed";
+      const msg = err?.response?.data?.detail || err?.message || "Request failed";
       setError(String(msg));
     } finally {
       setLoading(false);
@@ -112,8 +114,7 @@ export default function PredictForm() {
             <h2>Result</h2>
 
             <p>
-              <strong>Prediction:</strong>{" "}
-              {result.predicted_label || "-"}
+              <strong>Prediction:</strong> {result.predicted_label || "-"}
             </p>
 
             <p>
@@ -133,12 +134,16 @@ export default function PredictForm() {
             <p style={styles.disclaimer}>
               This assessment is supportive and not a medical diagnosis.
             </p>
+
+            {!showRehab && (
+              <p style={styles.healthyNote}>
+                No rehabilitation is needed based on this screening result.
+              </p>
+            )}
           </div>
         )}
 
-        {patientId && (
-          <RehabForm patientId={patientId} />
-        )}
+        {patientId && showRehab && <RehabForm patientId={patientId} />}
       </div>
     </div>
   );
@@ -198,5 +203,15 @@ const styles = {
     marginTop: 15,
     fontSize: 13,
     color: "#555",
+  },
+  healthyNote: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#0f172a",
+    background: "#ecfdf5",
+    border: "1px solid #a7f3d0",
+    padding: 10,
+    borderRadius: 12,
+    fontWeight: 700,
   },
 };
