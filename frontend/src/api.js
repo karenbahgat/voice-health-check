@@ -15,18 +15,3 @@ export async function predictVoice({ name, age, phone, file }) {
 
   return res.data;
 }
-
-// ✅ NEW: Diagnosis (AAA only)
-export async function diagnoseAAA({ name, age, phone, file }) {
-  const fd = new FormData();
-  fd.append("name", name);
-  fd.append("age", String(age));
-  fd.append("phone", phone);
-  fd.append("file", file);
-
-  const res = await axios.post(`${API_URL}/diagnosis/aaa`, fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-
-  return res.data;
-}
