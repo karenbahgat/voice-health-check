@@ -28,3 +28,7 @@ export async function submitRehabAttempt({ patient_id, task_id, file }) {
 
   return res.data;
 }
+export async function getRehabTasks() {
+  const res = await axios.get(`${API_URL}/rehab/tasks`);
+  return res.data;
+}

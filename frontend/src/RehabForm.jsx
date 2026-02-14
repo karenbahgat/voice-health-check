@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { submitRehabAttempt } from "./api";
+import React, { useEffect, useState } from "react";
+import { submitRehabAttempt, getRehabTasks } from "./api";
 
 export default function RehabForm({ patientId }) {
   const [file, setFile] = useState(null);
@@ -7,7 +7,28 @@ export default function RehabForm({ patientId }) {
   const [attempts, setAttempts] = useState([]);
   const [error, setError] = useState("");
 
+  const [refAudioUrl, setRefAudioUrl] = useState(null);
+  const [loadingRef, setLoadingRef] = useState(true);
+
   const taskId = "sustained_vowel"; // fixed task (A only)
+
+  // ✅ load reference audio for sustained_vowel
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingRef(true);
+        const tasks = await getRehabTasks();
+        const t = tasks?.find((x) => x.id === taskId);
+        setRefAudioUrl(t?.reference_audio_url || null);
+      } catch (e) {
+        // لو فشلنا نجيب الصوت، مش هنوقف الصفحة
+        console.error("Failed to load rehab tasks:", e);
+        setRefAudioUrl(null);
+      } finally {
+        setLoadingRef(false);
+      }
+    })();
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -75,6 +96,26 @@ export default function RehabForm({ patientId }) {
         Patient ID: <span style={{ fontFamily: "monospace" }}>{patientId || "-"}</span>
       </div>
 
+      {/* ✅ Reference audio player (manual play/pause by patient) */}
+      <div style={styles.refBox}>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>Listen to the example first:</div>
+
+        {loadingRef ? (
+          <div style={{ fontSize: 12, color: "#64748b" }}>Loading reference audio…</div>
+        ) : refAudioUrl ? (
+          <audio
+            controls
+            preload="none"
+            // ✅ patient must click play (no autoplay)
+            src={`https://karen-bahgat-voice-health-backend.hf.space${refAudioUrl}`}
+          />
+        ) : (
+          <div style={{ fontSize: 12, color: "#64748b" }}>
+            No reference audio is set for this task yet.
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="file"
@@ -103,15 +144,19 @@ export default function RehabForm({ patientId }) {
                 <b>Improvement:</b> {a.improvement_percent}%
                 {a.improvement_percent >= 5 && " 🎉"}
               </div>
-              <div style={{ color: statusColor(a.status), fontWeight: 700 }}>
-                {a.status}
-              </div>
+              <div style={{ color: statusColor(a.status), fontWeight: 700 }}>{a.status}</div>
 
               {a.metrics && (
                 <div style={styles.metrics}>
-                  <div><b>Duration:</b> {a.metrics.duration ?? "-"}</div>
-                  <div><b>Pitch stability:</b> {a.metrics.pitch_stability ?? "-"}</div>
-                  <div><b>Loudness stability:</b> {a.metrics.loudness_stability ?? "-"}</div>
+                  <div>
+                    <b>Duration:</b> {a.metrics.duration ?? "-"}
+                  </div>
+                  <div>
+                    <b>Pitch stability:</b> {a.metrics.pitch_stability ?? "-"}
+                  </div>
+                  <div>
+                    <b>Loudness stability:</b> {a.metrics.loudness_stability ?? "-"}
+                  </div>
                 </div>
               )}
             </div>
@@ -143,6 +188,13 @@ const styles = {
     fontSize: 12,
     color: "#64748b",
     marginBottom: 12,
+  },
+  refBox: {
+    marginBottom: 14,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #e5e7eb",
+    background: "#f8fafc",
   },
   form: {
     display: "flex",
